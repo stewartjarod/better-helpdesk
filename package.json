@@ -37,7 +37,8 @@
     "./next": "./next.mjs",
     "./rich": "./src/ui/rich.tsx",
     "./adapters": "./src/adapters.ts",
-    "./testing": "./src/testing.ts"
+    "./testing": "./src/testing.ts",
+    "./relays/wraps": "./src/relays/wraps.ts"
   },
   "bin": {
     "better-helpdesk-import": "bin/import.mjs",
@@ -70,6 +71,10 @@
       "./testing": {
         "types": "./dist/testing.d.ts",
         "default": "./dist/testing.js"
+      },
+      "./relays/wraps": {
+        "types": "./dist/relays/wraps.d.ts",
+        "default": "./dist/relays/wraps.js"
       },
       "./widget": {
         "types": "./dist/widget/index.d.ts",

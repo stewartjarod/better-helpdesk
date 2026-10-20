@@ -189,6 +189,9 @@ AWS SDK, so you wire the S3 read in yourself (see the example below).
 
 ### Wiring the S3 read
 
+The relay also ships in the package as `better-helpdesk/relays/wraps`, so the app can serve the
+webhook itself and pass `helpdesk.handler` as `deliver`: no second deploy and no HTTP hop.
+
 ```ts
 import { GetObjectCommand, NoSuchKey, S3Client } from '@aws-sdk/client-s3';
 import { createWrapsRelay } from './wraps';
