@@ -9,6 +9,20 @@ const config = (identityTokenSecret?: string) =>
     identityTokenSecret,
   }) as unknown as HelpdeskConfig;
 
+describe('features', () => {
+  it('turns the deals board and the CRM on unless the host turns one off', () => {
+    expect(resolveConfig(config()).features).toEqual({
+      deals: true,
+      crm: true,
+    });
+    const deals = {
+      ...config(),
+      features: { deals: false },
+    } as HelpdeskConfig;
+    expect(resolveConfig(deals).features).toEqual({ deals: false, crm: true });
+  });
+});
+
 describe('identityTokenSecret', () => {
   it('refuses a secret short enough to guess offline', () => {
     expect(() => resolveConfig(config('helpdesk2026'))).toThrow(

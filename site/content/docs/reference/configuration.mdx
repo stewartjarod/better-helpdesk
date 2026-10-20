@@ -188,6 +188,11 @@ export const helpdesk = buildHelpdesk({
       default: "['new', 'qualified', 'proposal', 'won', 'lost']",
       description: 'The stages a deal moves through. A deal created without a stage takes the first.',
     },
+    features: {
+      type: '{ deals?: boolean; crm?: boolean }',
+      default: '{ deals: true, crm: true }',
+      description: <>Turns off the deals board, with its routes, or the Contacts and Companies lists and the lead stages. See <a href="/docs/app/crm#turn-off-the-deals-board-or-the-crm">Track customers, companies and deals</a>.</>,
+    },
     customFields: {
       type: "Partial<Record<'contact' | 'company' | 'deal', CustomFieldDef[]>>",
       description: <>Extra fields per record, stored in its <code>custom</code> column. See <a href="#customfielddef">CustomFieldDef</a>.</>,

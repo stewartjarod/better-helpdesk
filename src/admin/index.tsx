@@ -46,6 +46,14 @@ export const HELPDESK_SECTIONS = [
 ] as const;
 const VIEWS = HELPDESK_SECTIONS;
 
+/** The sections a host turns off with `features`; every other section is always on. */
+function sectionOn(section: string, features?: Me['features']) {
+  if (section === 'deals') return features?.deals ?? true;
+  if (section === 'contacts' || section === 'companies')
+    return features?.crm ?? true;
+  return true;
+}
+
 /** The agent UI. Mount it in any React page; it routes through the query string. */
 export function HelpdeskAdmin({
   api: apiBase = '/api/helpdesk',
@@ -105,13 +113,17 @@ export function HelpdeskAdmin({
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new page clears the last page's failure.
   useEffect(() => setUnhandled(false), [route]);
 
-  const view = route.conversation
+  // A list the host turned off falls back to the inbox; a contact or company
+  // card still opens, because a conversation links to it.
+  const requested = route.conversation
     ? 'conversation'
     : route.contact
       ? 'contact'
       : route.company
         ? 'company'
         : (route.view ?? 'inbox');
+  const features = me.data?.features;
+  const view = sectionOn(requested, features) ? requested : 'inbox';
   const section =
     view === 'conversation'
       ? 'inbox'
@@ -175,7 +187,7 @@ export function HelpdeskAdmin({
                   className="sa-nav"
                   ref={navRef}
                   aria-label={t('admin.sections')}>
-                  {VIEWS.map(v => (
+                  {VIEWS.filter(v => sectionOn(v, features)).map(v => (
                     <button
                       key={v}
                       type="button"

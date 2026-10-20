@@ -37,6 +37,7 @@ const me = {
   dealStages: ['new', 'won'],
   customFields: {},
   ai: false,
+  features: { deals: true, crm: true },
 };
 
 const conversation = {
@@ -2620,5 +2621,99 @@ describe('details sidebar', () => {
         'No conversations were opened or resolved in this period.'
       )
     ).toBeTruthy();
+  });
+});
+
+describe('features the host turns off', () => {
+  // Routes a test overrides are put back as they were when it ends.
+  const setRoutes = (entries: Record<string, unknown>) => {
+    const before = Object.fromEntries(
+      Object.keys(entries).map(k => [k, routes[k]])
+    );
+    Object.assign(routes, entries);
+    onTestFinished(() => {
+      for (const [k, v] of Object.entries(before)) {
+        if (v === undefined) delete routes[k];
+        else routes[k] = v;
+      }
+    });
+  };
+  const withFeatures = (features: { deals: boolean; crm: boolean }) =>
+    setRoutes({ 'agent/me/': { ...me, features } });
+  const navOf = async () =>
+    within(await screen.findByRole('navigation', { name: 'Sections' }));
+
+  it('shows the Deals tab and board by default', async () => {
+    window.history.replaceState(null, '', '/support/deals/');
+    render(<HelpdeskAdmin basePath="/support" locale="en" />);
+    const nav = await navOf();
+    expect(nav.getByRole('button', { name: 'Deals' })).toBeTruthy();
+    expect(nav.getByRole('button', { current: 'page' }).textContent).toBe(
+      'Deals'
+    );
+  });
+
+  it('shows no Deals tab, and a deals address opens the inbox, when deals are off', async () => {
+    withFeatures({ deals: false, crm: true });
+    window.history.replaceState(null, '', '/support/deals/');
+    render(<HelpdeskAdmin basePath="/support" locale="en" />);
+    const nav = await navOf();
+    expect(nav.queryByRole('button', { name: 'Deals' })).toBeNull();
+    expect(nav.getByRole('button', { name: 'Contacts' })).toBeTruthy();
+    expect(nav.getByRole('button', { current: 'page' }).textContent).toBe(
+      'Inbox'
+    );
+  });
+
+  it('hides the Contacts and Companies lists and their tabs when the CRM is off', async () => {
+    withFeatures({ deals: true, crm: false });
+    window.history.replaceState(null, '', '/support/contacts/');
+    render(<HelpdeskAdmin basePath="/support" locale="en" />);
+    const nav = await navOf();
+    expect(nav.queryByRole('button', { name: 'Contacts' })).toBeNull();
+    expect(nav.queryByRole('button', { name: 'Companies' })).toBeNull();
+    expect(nav.getByRole('button', { name: 'Deals' })).toBeTruthy();
+    expect(nav.getByRole('button', { current: 'page' }).textContent).toBe(
+      'Inbox'
+    );
+  });
+
+  it('still shows a conversation’s contact and company card when the CRM is off', async () => {
+    withFeatures({ deals: true, crm: false });
+    setRoutes({
+      'agent/conversations/c1/': {
+        ...(original as object),
+        company: { id: 'co1', name: 'Acme', domain: 'acme.test' },
+      },
+    });
+    window.history.replaceState(null, '', '/support/conversations/c1/');
+    render(<HelpdeskAdmin basePath="/support" locale="en" />);
+    await waitFor(() =>
+      expect(
+        document.querySelector('a[href="/support/contacts/p1/"]')
+      ).not.toBeNull()
+    );
+    expect(
+      document.querySelector('a[href="/support/companies/co1/"]')
+    ).not.toBeNull();
+    expect(unrouted).toEqual([]);
+  });
+
+  it('hides the create-deal button on a lead when deals are off', async () => {
+    withFeatures({ deals: false, crm: true });
+    setRoutes({
+      'agent/conversations/c1/': {
+        ...(original as object),
+        conversation: { ...conversation, type: 'lead' },
+      },
+    });
+    window.history.replaceState(null, '', '/support/conversations/c1/');
+    render(<HelpdeskAdmin basePath="/support" locale="en" />);
+    await waitFor(() =>
+      expect(
+        document.querySelector('a[href="/support/contacts/p1/"]')
+      ).not.toBeNull()
+    );
+    expect(screen.queryByRole('button', { name: 'Create deal' })).toBeNull();
   });
 });

@@ -38,6 +38,7 @@ export type Me = {
     Record<'contact' | 'company' | 'deal', CustomFieldDef[]>
   >;
   ai: boolean;
+  features: { deals: boolean; crm: boolean };
 };
 
 export type AdminContext = {
