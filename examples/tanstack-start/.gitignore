@@ -1,0 +1,5 @@
+.output
+.tanstack
+dist
+helpdesk.db*
+src/routeTree.gen.ts
