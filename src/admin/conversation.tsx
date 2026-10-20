@@ -1110,7 +1110,7 @@ export function ConversationView({ id }: { id: string }) {
                 ))}
               </dl>
             )}
-            {c.type === 'lead' && data.contact && (
+            {me.features.deals && c.type === 'lead' && data.contact && (
               <button
                 type="button"
                 className="sa-btn"

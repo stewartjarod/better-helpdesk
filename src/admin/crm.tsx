@@ -341,16 +341,18 @@ export function ContactView({ id }: { id: string }) {
   return (
     <div className="sa">
       <div className="sa-page-head">
-        <a
-          className="sa-btn sa-back"
-          href={href({ view: 'contacts' })}
-          onClick={e => {
-            e.preventDefault();
-            navigate({ view: 'contacts' });
-          }}>
-          <Svg d={paths.back} />
-          {t('admin.contacts')}
-        </a>
+        {me.features.crm && (
+          <a
+            className="sa-btn sa-back"
+            href={href({ view: 'contacts' })}
+            onClick={e => {
+              e.preventDefault();
+              navigate({ view: 'contacts' });
+            }}>
+            <Svg d={paths.back} />
+            {t('admin.contacts')}
+          </a>
+        )}
       </div>
       <div className="sa-card sa-summary">
         <Avatar name={c.name ?? c.email} />
@@ -373,7 +375,7 @@ export function ContactView({ id }: { id: string }) {
             )}
           </div>
           <div className="sa-toolbar" style={{ marginTop: 6 }}>
-            {c.leadStage && (
+            {me.features.crm && c.leadStage && (
               <span className="sa-pill">{t(`stage.${c.leadStage}`)}</span>
             )}
             {segments.map(tag => (
@@ -522,31 +524,33 @@ export function ContactView({ id }: { id: string }) {
               }}
             />
           </div>
-          <div className="sa-card">
-            <h3>{t('admin.deals')}</h3>
-            {data.deals.map(d => (
-              <a
-                key={d.id}
-                href={href({ view: 'deals' })}
-                onClick={e => {
-                  e.preventDefault();
-                  navigate({ view: 'deals' });
-                }}>
-                {d.title} · {t(`stage.${d.stage}`)}{' '}
-                <span className="num sa-muted">
-                  {money(d.value, d.currency, locale)}
-                </span>
-              </a>
-            ))}
-            <button
-              type="button"
-              className="sa-btn"
-              style={{ justifySelf: 'start' }}
-              onClick={() => setNewDeal(true)}>
-              <Svg d={paths.plus} />
-              {t('admin.newDeal')}
-            </button>
-          </div>
+          {me.features.deals && (
+            <div className="sa-card">
+              <h3>{t('admin.deals')}</h3>
+              {data.deals.map(d => (
+                <a
+                  key={d.id}
+                  href={href({ view: 'deals' })}
+                  onClick={e => {
+                    e.preventDefault();
+                    navigate({ view: 'deals' });
+                  }}>
+                  {d.title} · {t(`stage.${d.stage}`)}{' '}
+                  <span className="num sa-muted">
+                    {money(d.value, d.currency, locale)}
+                  </span>
+                </a>
+              ))}
+              <button
+                type="button"
+                className="sa-btn"
+                style={{ justifySelf: 'start' }}
+                onClick={() => setNewDeal(true)}>
+                <Svg d={paths.plus} />
+                {t('admin.newDeal')}
+              </button>
+            </div>
+          )}
           <div className="sa-card">
             <h3>{t('admin.identities')}</h3>
             {data.identities.map(i => (
@@ -624,15 +628,17 @@ export function ContactView({ id }: { id: string }) {
           </div>
         </div>
       </Dialog>
-      <DealDialog
-        deal={newDeal ? 'new' : null}
-        defaults={{ contactId: id, companyId: c.companyId }}
-        onClose={() => setNewDeal(false)}
-        onSaved={async () => {
-          setNewDeal(false);
-          await detail.refresh();
-        }}
-      />
+      {me.features.deals && (
+        <DealDialog
+          deal={newDeal ? 'new' : null}
+          defaults={{ contactId: id, companyId: c.companyId }}
+          onClose={() => setNewDeal(false)}
+          onSaved={async () => {
+            setNewDeal(false);
+            await detail.refresh();
+          }}
+        />
+      )}
       {confirm.node}
     </div>
   );
@@ -757,7 +763,7 @@ export function CompanyView({ id }: { id: string }) {
         </a>
         <Avatar name={c.name} />
         <h2>{c.name}</h2>
-        {c.leadStage && (
+        {me.features.crm && c.leadStage && (
           <span className="sa-pill">{t(`stage.${c.leadStage}`)}</span>
         )}
       </div>
@@ -823,11 +829,13 @@ export function CompanyView({ id }: { id: string }) {
               </a>
             ))}
           </div>
-          <DealsCard
-            deals={data.deals}
-            create={{ companyId: id }}
-            onChanged={detail.refresh}
-          />
+          {me.features.deals && (
+            <DealsCard
+              deals={data.deals}
+              create={{ companyId: id }}
+              onChanged={detail.refresh}
+            />
+          )}
         </aside>
       </div>
     </div>
@@ -875,7 +883,7 @@ function EntityForm({
             body: {
               name: name || (entity === 'contact' ? null : undefined),
               ...(entity === 'company' ? { domain: domain || null } : {}),
-              leadStage: leadStage || null,
+              ...(me.features.crm ? { leadStage: leadStage || null } : {}),
               tags: tags
                 .split(',')
                 .map(s => s.trim())
@@ -908,27 +916,29 @@ function EntityForm({
             />
           </label>
         )}
-        <label className="sa-field">
-          {t('admin.leadStage')}
-          <select
-            className="sa-select"
-            style={{ width: '100%' }}
-            value={leadStage}
-            onChange={e => setLeadStage(e.target.value)}>
-            <option value="">{t('admin.none')}</option>
-            {[
-              ...me.leadStages,
-              ...(initial.leadStage &&
-              !me.leadStages.includes(initial.leadStage)
-                ? [initial.leadStage]
-                : []),
-            ].map(s => (
-              <option key={s} value={s}>
-                {t(`stage.${s}`)}
-              </option>
-            ))}
-          </select>
-        </label>
+        {me.features.crm && (
+          <label className="sa-field">
+            {t('admin.leadStage')}
+            <select
+              className="sa-select"
+              style={{ width: '100%' }}
+              value={leadStage}
+              onChange={e => setLeadStage(e.target.value)}>
+              <option value="">{t('admin.none')}</option>
+              {[
+                ...me.leadStages,
+                ...(initial.leadStage &&
+                !me.leadStages.includes(initial.leadStage)
+                  ? [initial.leadStage]
+                  : []),
+              ].map(s => (
+                <option key={s} value={s}>
+                  {t(`stage.${s}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="sa-field">
           {t('admin.tags')}
           <input

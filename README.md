@@ -288,6 +288,22 @@ there: sign-in, production, email, jobs, attachments, AI and theming.
 [`examples/demo`](https://github.com/better-helpdesk/better-helpdesk/tree/main/examples/demo)
 has it wired up end to end.
 
+### Turn off the deals board or the CRM
+
+Both are on by default. A host that does not use deals, or does not want the
+Contacts and Companies lists, can switch either off:
+
+```ts
+buildHelpdesk({
+  // ...
+  features: { deals: false, crm: false },
+});
+```
+
+With `deals: false` the Deals tab goes and every deal route answers 404, as an
+unknown path would. With `crm: false` the Contacts and Companies lists and the
+lead stages go, but a conversation's contact and company card still works.
+
 ## Documentation
 
 [better-helpdesk.com/docs](https://better-helpdesk.com/docs):

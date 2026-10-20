@@ -279,6 +279,8 @@ export type HelpdeskConfig = {
   clientIp?(request: Request): string | null;
   leadStages?: string[];
   dealStages?: string[];
+  /** Parts of the agent UI to turn off, and their routes with them. Both are on by default. */
+  features?: { deals?: boolean; crm?: boolean };
   customFields?: Partial<
     Record<'contact' | 'company' | 'deal', CustomFieldDef[]>
   >;
@@ -309,6 +311,7 @@ export type ResolvedConfig = HelpdeskConfig & {
   types: string[];
   leadStages: string[];
   dealStages: string[];
+  features: { deals: boolean; crm: boolean };
   maxAttachmentBytes: number;
   anonymousRateLimit: number;
   customerRateLimit: number;
@@ -340,6 +343,10 @@ export function resolveConfig(config: HelpdeskConfig): ResolvedConfig {
     types: config.types ?? DEFAULT_TYPES,
     leadStages: config.leadStages ?? DEFAULT_LEAD_STAGES,
     dealStages: config.dealStages ?? DEFAULT_DEAL_STAGES,
+    features: {
+      deals: config.features?.deals ?? true,
+      crm: config.features?.crm ?? true,
+    },
     maxAttachmentBytes: config.maxAttachmentBytes ?? 10 * 1024 * 1024,
     anonymousRateLimit: config.anonymousRateLimit ?? 20,
     customerRateLimit: config.customerRateLimit ?? 60,

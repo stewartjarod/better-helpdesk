@@ -632,6 +632,7 @@ export function createHandler(support: Helpdesk) {
         )
       ),
       ai: Boolean(config.ai),
+      features: config.features,
     })
   );
 
@@ -1432,7 +1433,12 @@ export function createHandler(support: Helpdesk) {
   const dealStage = (stored?: string) =>
     z.string().refine(s => config.dealStages.includes(s) || s === stored);
 
-  agentRoute('GET', 'deals', async () => {
+  // Off, a deal route is not registered at all, so it answers the 404 an unknown path gets.
+  const dealRoute: typeof agentRoute = (...args) => {
+    if (config.features.deals) agentRoute(...args);
+  };
+
+  dealRoute('GET', 'deals', async () => {
     const rows = await store.listDeals({});
     return json({
       deals: rows.map(r => ({
@@ -1443,7 +1449,7 @@ export function createHandler(support: Helpdesk) {
     });
   });
 
-  agentRoute('POST', 'deals', async ({ body, agent }) => {
+  dealRoute('POST', 'deals', async ({ body, agent }) => {
     const data = z
       .object({
         title: z.string().trim().min(1).max(200),
@@ -1469,7 +1475,7 @@ export function createHandler(support: Helpdesk) {
     return json({ deal }, 201);
   });
 
-  agentRoute('PATCH', 'deals/:id', async ({ params, body }) => {
+  dealRoute('PATCH', 'deals/:id', async ({ params, body }) => {
     const deal = await requireRow(params.id, store.getDeal);
     const data = z
       .object({
@@ -1506,7 +1512,7 @@ export function createHandler(support: Helpdesk) {
     return json({ deal: updated });
   });
 
-  agentRoute('DELETE', 'deals/:id', async ({ params }) => {
+  dealRoute('DELETE', 'deals/:id', async ({ params }) => {
     const deal = await requireRow(params.id, store.getDeal);
     await store.deleteDeal(deal.id);
     return json({ ok: true });
@@ -1526,7 +1532,10 @@ export function createHandler(support: Helpdesk) {
       .parse(await body());
     if (data.contactId) await requireRow(data.contactId, store.getContact);
     if (data.companyId) await requireRow(data.companyId, store.getCompany);
-    if (data.dealId) await requireRow(data.dealId, store.getDeal);
+    if (data.dealId) {
+      if (!config.features.deals) throw new HelpdeskError(404, 'Not found');
+      await requireRow(data.dealId, store.getDeal);
+    }
     const activity = await store.createActivity({
       ...data,
       agentId: agent.id,

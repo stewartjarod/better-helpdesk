@@ -91,6 +91,19 @@ The agent UI shows and edits the fields of contacts and companies on their pages
 
 A contact's and a company's page has a timeline: their conversations, and the notes, calls and meetings agents log there. To add what happens in your own app, such as an upgrade, call `helpdesk.track` from your server code, as in [Call the helpdesk from your own code](/docs/app/own-code#put-an-event-on-a-customers-timeline).
 
+## Turn off the deals board or the CRM
+
+Both are on by default. A host that does not sell through deals, or does not want the Contacts and Companies lists, can switch either one off:
+
+```ts title="lib/helpdesk.ts"
+export const helpdesk = buildHelpdesk({
+  // ...
+  features: { deals: false, crm: false },
+});
+```
+
+With `deals: false` the agent UI has no Deals tab, and every deal route answers 404, as it would for a path that does not exist. With `crm: false` the Contacts and Companies lists and their tabs go, along with the lead stages. The contact and company cards in a conversation stay, since they hold the customer's record that the conversation needs, and so do their routes.
+
 ## Tag contacts and companies
 
 Agents tag a contact or a company on its page, as a comma-separated list, up to 50 tags of up to 50 characters each. When an inbox has a [qualifying question](/docs/inbox/inboxes#inboxconfig), the answer a customer picks is added to their contact's tags. Conversation tags are separate; they are set on the conversation.
