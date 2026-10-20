@@ -1,0 +1,31 @@
+{
+  "version": "0",
+  "id": "5b1f2c3d-0000-4000-8000-000000000001",
+  "detail-type": "email.received",
+  "source": "wraps.inbound",
+  "account": "123456789012",
+  "time": "2026-10-19T07:14:03Z",
+  "region": "eu-central-1",
+  "resources": [],
+  "detail": {
+    "emailId": "inb_0a1b2c3d4e5f",
+    "messageId": "<wraps-1@customer.test>",
+    "receivingDomain": "inbound.harbor.test",
+    "from": { "address": "mara.keller@customer.test", "name": "Mara Keller" },
+    "to": [{ "address": "support+HD-1001@inbound.harbor.test" }],
+    "cc": [],
+    "subject": "Grüezi, the export is empty",
+    "date": "2026-10-19T07:14:02.000Z",
+    "html": null,
+    "htmlTruncated": false,
+    "text": "Grüezi, the CSV export from Monday is empty.",
+    "headers": {},
+    "attachments": [],
+    "spamVerdict": "PASS",
+    "virusVerdict": "PASS",
+    "rawS3Key": "raw/7q2r8s9t0u1v2w3x4y5z",
+    "receivedAt": "2026-10-19T07:14:03.000Z",
+    "replyToken": null,
+    "autoReply": false
+  }
+}
